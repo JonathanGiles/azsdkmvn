@@ -16,6 +16,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,6 +25,20 @@ public final class AnnotationUtils {
 
     private AnnotationUtils() {
         // no-op
+    }
+
+    public static ClassLoader getCompleteClassLoader(final Stream<Path> paths) {
+        final List<URL> urls = paths.map(AnnotationUtils::pathToUrl).collect(Collectors.toList());
+        return URLClassLoader.newInstance(urls.toArray(new URL[0]));
+    }
+
+    public static Optional<Class<? extends Annotation>> getAnnotation(String name, ClassLoader classLoader) {
+        try {
+            return Optional.of(Class.forName(name, false, classLoader).asSubclass(Annotation.class));
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     public static Set<AnnotatedMethodCallerResult> findCallsToAnnotatedMethod(final Class<? extends Annotation> annotation,
