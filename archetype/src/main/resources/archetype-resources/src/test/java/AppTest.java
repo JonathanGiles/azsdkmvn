@@ -1,3 +1,11 @@
+package ${package};
+
+import org.junit.Test;
+
 public class AppTest {
-    // hello world!
+
+    @Test
+    public void testApp() {
+        // hello world
+    }
 }

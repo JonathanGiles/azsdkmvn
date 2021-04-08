@@ -10,12 +10,14 @@
     <name>${artifactId}</name>
 
     <dependencyManagement>
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-sdk-bom</artifactId>
-            <version>1.0.2</version>
-            <type>pom</type>
-        </dependency>
+        <dependencies>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-sdk-bom</artifactId>
+                <version>1.0.2</version>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
     </dependencyManagement>
 
     <dependencies>
