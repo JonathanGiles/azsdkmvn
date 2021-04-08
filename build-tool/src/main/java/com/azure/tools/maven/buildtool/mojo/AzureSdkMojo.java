@@ -12,9 +12,9 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 @Mojo(name = "run",
-    defaultPhase = LifecyclePhase.PROCESS_RESOURCES,
-    requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME,
-    requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+    defaultPhase = LifecyclePhase.PREPARE_PACKAGE,
+    requiresDependencyCollection = ResolutionScope.RUNTIME,
+    requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class AzureSdkMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)

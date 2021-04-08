@@ -17,6 +17,7 @@
     <modules>
         <module>build-tool</module>
         <module>archetype</module>
+        <module>tests/appconfig</module>
     </modules>
 
     <build>
