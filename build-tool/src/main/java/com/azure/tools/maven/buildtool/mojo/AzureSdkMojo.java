@@ -11,6 +11,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Mojo(name = "run",
     defaultPhase = LifecyclePhase.PREPARE_PACKAGE,
     requiresDependencyCollection = ResolutionScope.RUNTIME,
@@ -19,9 +22,6 @@ public class AzureSdkMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-//    @Parameter(property = "enabledTools", required = false)
-//    private EnabledTools enabledTools;
 
     @Parameter(property = "failOnMissingAzureSdkBom", defaultValue = "true")
     private boolean failOnMissingAzureSdkBom;
@@ -44,6 +44,18 @@ public class AzureSdkMojo extends AbstractMojo {
     @Parameter(property = "writeToFile", defaultValue = "", required = false)
     private String reportFile;
 
+    private final Map<String, Object> context;
+
+    public AzureSdkMojo() {
+        this.context = new HashMap<>();
+    }
+
+    /**
+     * The context is a shared store for operations being performed throughout this mojo.
+     */
+    public Map<String, Object> getContext() {
+        return context;
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

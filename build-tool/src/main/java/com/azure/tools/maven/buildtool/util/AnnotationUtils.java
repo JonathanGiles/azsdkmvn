@@ -27,7 +27,9 @@ public final class AnnotationUtils {
     }
 
     public static Set<AnnotatedMethodCallerResult> findCallsToAnnotatedMethod(final Class<? extends Annotation> annotation,
-                                                                              final Stream<Path> paths) {
+                                                                              final Stream<Path> paths,
+                                                                              final Set<String> interestedPackages,
+                                                                              final boolean recursive) {
         final ConfigurationBuilder config = new ConfigurationBuilder()
               .setScanners(new MethodAnnotationsScanner(), new MemberUsageScanner());
 
@@ -55,25 +57,50 @@ public final class AnnotationUtils {
         final Set<Method> annotatedMethods = reflections.getMethodsAnnotatedWith(annotation);
         final Set<AnnotatedMethodCallerResult> results = new HashSet<>();
 
-        annotatedMethods.stream().forEach(method -> {
-            try {
-                final Set<Member> callingMethods = reflections.getMethodUsage(method);
-                if (!callingMethods.isEmpty()) {
-                    System.out.println("For method " + method + ", the following methods call it:");
-                    callingMethods.forEach(member -> {
-                        System.out.println("  " + member);
-                        results.add(new AnnotatedMethodCallerResult(annotation, method, member));
-                    });
-                } else {
-                    System.out.println("Couldn't find method usage of method " + method);
-                }
-            } catch (ReflectionsException e) {
-                System.err.println("Error trying to find usage of method " + method);
-//                e.printStackTrace();
-            }
+        annotatedMethods.forEach(method -> {
+            checkMethod(reflections, annotation, method, interestedPackages, recursive, results);
         });
 
         return results;
+    }
+
+    private static void checkMethod(final Reflections reflections,
+                                    final Class<? extends Annotation> annotation,
+                                    final Method method,
+                                    final Set<String> interestedPackages,
+                                    final boolean recursive,
+                                    final Set<AnnotatedMethodCallerResult> results) {
+        final Set<Member> callingMethods;
+        try {
+            callingMethods = reflections.getMethodUsage(method);
+        } catch (ReflectionsException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        callingMethods.forEach(member -> {
+            // we only add a result if the calling method is in the list of packages we are interested in
+            if (member instanceof Method) {
+                final Method methodMember = (Method) member;
+                final String packageName = methodMember.getDeclaringClass().getPackage().getName();
+
+                if (interestedPackages.contains(packageName)) {
+                    // we have reached a point where we have found a method call from code in a package
+                    // we are interested in, so we will record it as a valid result. We do not recurse
+                    // further from this method.
+                    results.add(new AnnotatedMethodCallerResult(annotation, method, member));
+                } else {
+                    if (recursive) {
+                        // we are looking at code that we know calls an annotated service method, but it is not
+                        // within one of the packages we are interested in. We recurse here, finding all methods
+                        // that call this method, until such time that we run out of methods to check.
+                        checkMethod(reflections, annotation, methodMember, interestedPackages, recursive, results);
+                    }
+                }
+            } else {
+                // TODO
+            }
+        });
     }
 
     private static URL pathToUrl(Path path) {

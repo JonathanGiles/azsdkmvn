@@ -8,6 +8,7 @@ public class Tools {
     static {
         TOOLS.add(new DependencyCheckerTool());
         TOOLS.add(new AnnotationProcessingTool());
+        TOOLS.add(new ReportingTool());
     }
 
     public static List<Tool> getTools() {
