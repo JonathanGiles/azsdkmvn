@@ -52,6 +52,7 @@ public class AzureSdkMojo extends AbstractMojo {
 
     /**
      * The context is a shared store for operations being performed throughout this mojo.
+     * @return The context map.
      */
     public Map<String, Object> getContext() {
         return context;

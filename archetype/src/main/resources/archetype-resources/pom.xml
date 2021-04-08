@@ -9,6 +9,13 @@
 
     <name>${artifactId}</name>
 
+    <properties>
+        <graalvm.version>21.0.0.2</graalvm.version>
+        <junit4.version>4.12</junit4.version>
+        <maven.compiler.target>${javaversion}</maven.compiler.target>
+        <maven.compiler.source>${javaversion}</maven.compiler.source>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -21,10 +28,20 @@
     </dependencyManagement>
 
     <dependencies>
+        #if( ${enableGraalVm} == 'true')
+
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        #end
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit4.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -44,4 +61,35 @@
             </plugin>
         </plugins>
     </build>
+
+    #if( ${enableGraalVm} == 'true')
+
+    <profiles>
+        <profile>
+            <id>graalvm</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.nativeimage</groupId>
+                        <artifactId>native-image-maven-plugin</artifactId>
+                        <version>${graalvm.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <imageName>${artifactId}</imageName>
+                            <mainClass>${package}.App</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    #end
+
 </project>
