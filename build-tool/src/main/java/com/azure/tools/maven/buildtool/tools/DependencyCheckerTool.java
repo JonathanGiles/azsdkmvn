@@ -18,6 +18,30 @@ public class DependencyCheckerTool implements Tool {
     public void run(AzureSdkMojo mojo) {
         mojo.getLog().info("Running Dependency Checker Tool");
 
+        checkForBom(mojo);
+        checkForAzureSdkDependencyVersions(mojo);
+        checkForAzureSdkTransitiveDependencyConflicts(mojo);
+        checkForAzureSdkTrackOneDependencies(mojo);
+        checkForOutdatedAzureSdkDependencies(mojo);
+    }
 
+    private void checkForBom(AzureSdkMojo mojo) {
+        // TODO
+    }
+
+    private void checkForAzureSdkDependencyVersions(AzureSdkMojo mojo) {
+        // TODO
+    }
+
+    private void checkForAzureSdkTransitiveDependencyConflicts(AzureSdkMojo mojo) {
+        // TODO
+    }
+
+    private void checkForAzureSdkTrackOneDependencies(AzureSdkMojo mojo) {
+        // TODO
+    }
+
+    private void checkForOutdatedAzureSdkDependencies(AzureSdkMojo mojo) {
+        // TODO
     }
 }
