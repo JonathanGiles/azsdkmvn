@@ -26,5 +26,5 @@ mvn -f build-tool/src/test/resources/testPom.xml azure:run
 For faster development cycles, it is recommended to chain together the install and azure:run steps, as such:
 
 ```shell
-mvn install && mvn -f build-tool/src/test/resources/testPom.xml azure:run
+mvn install && mvn -f tests/appconfig/pom.xml azure:run
 ```
