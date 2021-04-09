@@ -13,11 +13,41 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+<!--    <dependencyManagement>-->
+<!--        <dependencies>-->
+<!--            <dependency>-->
+<!--                <groupId>com.azure</groupId>-->
+<!--                <artifactId>azure-sdk-bom</artifactId>-->
+<!--                <version>1.0.2</version>-->
+<!--            </dependency>-->
+<!--        </dependencies>-->
+<!--    </dependencyManagement>-->
+
     <dependencies>
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-data-appconfiguration</artifactId>
-            <version>1.2.0-beta.1</version>
+            <version>2.2.0-beta.1</version>
+        </dependency>
+
+        <!--
+        used for testing direct dependency on track one library. It also should report transitive dependencies
+        coming from this library
+        -->
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-cosmosdb</artifactId>
+            <version>2.6.13</version>
+        </dependency>
+
+        <!--
+        This library has a direct dependency on com.microsoft.adal4j, a 'track one' library that we would like
+        to warn users about, if we have failOnDeprecatedMicrosoftLibraryUsage set to true
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-mssql</artifactId>
+            <version>1.13.1.Final</version>
         </dependency>
     </dependencies>
 

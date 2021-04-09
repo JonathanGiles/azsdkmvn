@@ -1,20 +1,17 @@
 package com.azure.tools.maven.buildtool.tools;
 
 import com.azure.tools.maven.buildtool.mojo.AzureSdkMojo;
-import com.azure.tools.maven.buildtool.util.AnnotatedMethodCallerResult;
-import com.azure.tools.maven.buildtool.util.AnnotationUtils;
-import org.apache.maven.artifact.Artifact;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import static com.azure.tools.maven.buildtool.util.AnnotationUtils.*;
+import static com.azure.tools.maven.buildtool.util.MojoUtils.*;
 
 /**
  * Performs the following tasks:
@@ -26,30 +23,23 @@ import static com.azure.tools.maven.buildtool.util.AnnotationUtils.*;
  */
 public class AnnotationProcessingTool implements Tool {
 
-    public static final String CONTEXT_ANNOTATION_SERVICE_METHOD_CALLS = "AnnotationProcessingTool.ServiceMethod";
-
-    @SuppressWarnings("unchecked")
     public void run(AzureSdkMojo mojo) {
         mojo.getLog().info("Running Annotation Processing Tool");
 
         // We build up a list of packages in the source of the user maven project, so that we only report on the
         // usage of annotation methods from code within these packages
         final Set<String> interestedPackages = new TreeSet<>(Comparator.comparingInt(String::length));
-        ((List<String>)mojo.getProject()
-            .getCompileSourceRoots())
-            .forEach(root -> buildPackageList(root, root, interestedPackages));
+        getCompileSourceRoots(mojo).forEach(root -> buildPackageList(root, root, interestedPackages));
 
         final ClassLoader classLoader = getCompleteClassLoader(getAllPaths(mojo));
 
         // Collect all calls to methods annotated with the Azure SDK @ServiceMethod annotation
-        getAnnotation("com.azure.core.annotation.ServiceMethod", classLoader).ifPresent(annotation -> {
-            mojo.getContext().put(CONTEXT_ANNOTATION_SERVICE_METHOD_CALLS,
-                findCallsToAnnotatedMethod(annotation, getAllPaths(mojo), interestedPackages, true));
-        });
+        getAnnotation("com.azure.core.annotation.ServiceMethod", classLoader)
+            .map(a -> findCallsToAnnotatedMethod(a, getAllPaths(mojo), interestedPackages, true))
+            .ifPresent(mojo.getReport()::setServiceMethodCalls);
 
         // TODO include support for scanning @Beta APIs, if we decide to provide that functionality
 
-        System.out.println(mojo.getContext().get(CONTEXT_ANNOTATION_SERVICE_METHOD_CALLS));
     }
 
     private static Stream<Path> getAllPaths(AzureSdkMojo mojo) {
@@ -60,8 +50,8 @@ public class AnnotationProcessingTool implements Tool {
         // jar file dependencies. We use this to analyse the use of annotations and report back to the user.
         return Stream.concat(
                    Stream.of(targetDir.getAbsolutePath()),
-                   mojo.getProject().getArtifacts().stream().map(d -> ((Artifact) d).getFile().getAbsolutePath()))
-               .map(str -> Paths.get((String) str));
+                   getAllDependencies(mojo).stream().map(a -> a.getFile().getAbsolutePath()))
+               .map(Paths::get);
     }
 
     private static void buildPackageList(String rootDir, String currentDir, Set<String> packages) {

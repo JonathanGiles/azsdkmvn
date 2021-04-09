@@ -1,5 +1,6 @@
 package com.azure.tools.maven.buildtool.mojo;
 
+import com.azure.tools.maven.buildtool.models.Report;
 import com.azure.tools.maven.buildtool.tools.Tool;
 import com.azure.tools.maven.buildtool.tools.Tools;
 import org.apache.maven.plugin.AbstractMojo;
@@ -38,24 +39,20 @@ public class AzureSdkMojo extends AbstractMojo {
     @Parameter(property = "failOnBeta", defaultValue = "true", required = false)
     private boolean failOnBeta;
 
-    @Parameter(property = "printToConsole", defaultValue = "true", required = false)
-    private boolean printToConsole;
+//    @Parameter(property = "printToConsole", defaultValue = "true", required = false)
+//    private boolean printToConsole;
+//
+//    @Parameter(property = "writeToFile", defaultValue = "", required = false)
+//    private String reportFile;
 
-    @Parameter(property = "writeToFile", defaultValue = "", required = false)
-    private String reportFile;
-
-    private final Map<String, Object> context;
+    private final Report report;
 
     public AzureSdkMojo() {
-        this.context = new HashMap<>();
+        this.report = new Report();
     }
 
-    /**
-     * The context is a shared store for operations being performed throughout this mojo.
-     * @return The context map.
-     */
-    public Map<String, Object> getContext() {
-        return context;
+    public Report getReport() {
+        return report;
     }
 
     @Override
@@ -64,7 +61,10 @@ public class AzureSdkMojo extends AbstractMojo {
         getLog().info("= Running the Azure SDK Maven Build Tool                               =");
         getLog().info("========================================================================");
 
+        // Run all of the tools. They will collect their results in the report.
         Tools.getTools().forEach(t -> t.run(this));
+
+        report.conclude(this);
     }
 
     public MavenProject getProject() {
@@ -91,11 +91,11 @@ public class AzureSdkMojo extends AbstractMojo {
         return failOnBeta;
     }
 
-    public boolean isPrintToConsole() {
-        return printToConsole;
-    }
-
-    public String getReportFile() {
-        return reportFile;
-    }
+//    public boolean isPrintToConsole() {
+//        return printToConsole;
+//    }
+//
+//    public String getReportFile() {
+//        return reportFile;
+//    }
 }

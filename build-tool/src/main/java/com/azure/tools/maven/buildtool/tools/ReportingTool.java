@@ -15,6 +15,6 @@ public class ReportingTool implements Tool {
             return;
         }
 
-        // Create a MicrosoftReport instance and send it to the appropriate endpoint
+        // Create a Report instance and send it to the appropriate endpoint
     }
 }
