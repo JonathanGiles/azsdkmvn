@@ -6,7 +6,6 @@ public class ReportingTool implements Tool {
 
     @Override
     public void run(AzureSdkMojo mojo) {
-
         sendToMicrosoft(mojo);
     }
 
