@@ -11,9 +11,15 @@
 
     <properties>
         <graalvm.version>21.0.0.2</graalvm.version>
+        #if( ${junitVersion} == '4')
         <junit4.version>4.12</junit4.version>
-        <maven.compiler.target>${javaversion}</maven.compiler.target>
-        <maven.compiler.source>${javaversion}</maven.compiler.source>
+        #end
+        #if( ${junitVersion} == '5')
+        <junit5.version>5.7.2</junit5.version>
+        #end
+        <maven.compiler.target>${javaVersion}</maven.compiler.target>
+        <maven.compiler.source>${javaVersion}</maven.compiler.source>
+        <bom.version>1.0.2</bom.version>
     </properties>
 
     <dependencyManagement>
@@ -21,7 +27,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-sdk-bom</artifactId>
-                <version>1.0.2</version>
+                <version>${bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -29,8 +35,7 @@
     </dependencyManagement>
 
     <dependencies>
-        #if( ${enableGraalVm} == 'true')
-
+        #if( ${enableGraalVM} == 'true')
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
@@ -39,12 +44,35 @@
         </dependency>
         #end
 
+        #if( ${junitVersion} == '4')
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit4.version}</version>
             <scope>test</scope>
         </dependency>
+        #end
+
+        #if( ${junitVersion} == '5')
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+        #end
     </dependencies>
 
     <build>
@@ -64,10 +92,9 @@
     </build>
 
     #if( ${enableGraalVm} == 'true')
-
     <profiles>
         <profile>
-            <id>graalvm</id>
+            <id>native</id>
             <build>
                 <plugins>
                     <plugin>
@@ -92,5 +119,4 @@
         </profile>
     </profiles>
     #end
-
 </project>

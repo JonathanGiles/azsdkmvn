@@ -12,12 +12,16 @@
     </fileSets>
 
     <requiredProperties>
-        <requiredProperty key="enableGraalVm">
+        <requiredProperty key="enableGraalVM">
             <validationRegex>(true|false)</validationRegex>
-            <defaultValue>false</defaultValue>
+            <defaultValue>true</defaultValue>
         </requiredProperty>
-        <requiredProperty key="javaversion">
-            <defaultValue>1.8</defaultValue>
+        <requiredProperty key="javaVersion">
+            <defaultValue>11</defaultValue>
+        </requiredProperty>
+        <requiredProperty key="junitVersion">
+            <validationRegex>(4|5)</validationRegex>
+            <defaultValue>5</defaultValue>
         </requiredProperty>
     </requiredProperties>
 
