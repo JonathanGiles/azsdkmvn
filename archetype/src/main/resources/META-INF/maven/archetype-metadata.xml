@@ -23,6 +23,9 @@
             <validationRegex>(4|5)</validationRegex>
             <defaultValue>5</defaultValue>
         </requiredProperty>
+        <requiredProperty key="azureLibraries">
+        </requiredProperty>
     </requiredProperties>
+
 
 </archetype-descriptor>
