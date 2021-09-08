@@ -42,8 +42,8 @@ public class AzureSdkMojo extends AbstractMojo {
 //    @Parameter(property = "printToConsole", defaultValue = "true", required = false)
 //    private boolean printToConsole;
 //
-//    @Parameter(property = "writeToFile", defaultValue = "", required = false)
-//    private String reportFile;
+   @Parameter(property = "reportFile", defaultValue = "", required = false)
+   private String reportFile;
 
     private final Report report;
 
@@ -95,7 +95,7 @@ public class AzureSdkMojo extends AbstractMojo {
 //        return printToConsole;
 //    }
 //
-//    public String getReportFile() {
-//        return reportFile;
-//    }
+   public String getReportFile() {
+       return reportFile;
+   }
 }

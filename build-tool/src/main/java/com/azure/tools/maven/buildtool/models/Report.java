@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -84,7 +86,7 @@ public class Report {
 
         try {
             StringWriter writer = new StringWriter();
-            JsonGenerator generator = new JsonFactory().createGenerator(writer);
+            JsonGenerator generator = new JsonFactory().createGenerator(writer).useDefaultPrettyPrinter();
 
             generator.writeStartObject();
             generator.writeStringField("group", mojo.getProject().getGroupId());
@@ -126,6 +128,12 @@ public class Report {
             writer.close();
 
             this.jsonReport = writer.toString();
+            if (mojo.getReportFile() != null && !mojo.getReportFile().isEmpty()) {
+                File reportFile = new File(mojo.getReportFile());
+                try (FileWriter fileWriter = new FileWriter(reportFile)) {
+                    fileWriter.write(this.jsonReport);
+                }
+            }
         } catch (IOException exception) {
 
         }
