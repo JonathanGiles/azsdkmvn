@@ -2,7 +2,6 @@ package com.azure.tools.maven.buildtool.util;
 
 import com.azure.tools.maven.buildtool.mojo.AzureSdkMojo;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Dependency;
 
 import java.util.List;
 import java.util.Set;
@@ -13,8 +12,8 @@ public class MojoUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Set<Artifact> getDirectDependencies(AzureSdkMojo mojo) {
-        return mojo.getProject().getDependencyArtifacts();
+    public static Set<Artifact> getDirectDependencies() {
+        return AzureSdkMojo.MOJO.getProject().getDependencyArtifacts();
     }
 
 //    @SuppressWarnings("unchecked")
@@ -23,21 +22,14 @@ public class MojoUtils {
 //    }
 
     @SuppressWarnings("unchecked")
-    public static Set<Artifact> getAllDependencies(AzureSdkMojo mojo) {
-        return mojo.getProject().getArtifacts();
+    public static Set<Artifact> getAllDependencies() {
+        return AzureSdkMojo.MOJO.getProject().getArtifacts();
     }
 
     @SuppressWarnings("unchecked")
-    public static List<String> getCompileSourceRoots(AzureSdkMojo mojo) {
-        return ((List<String>)mojo.getProject()
+    public static List<String> getCompileSourceRoots() {
+        return ((List<String>)AzureSdkMojo.MOJO.getProject()
                            .getCompileSourceRoots());
     }
 
-    public static String toGAV(Dependency d) {
-        return d.getGroupId() + ":" + d.getArtifactId() + ":" + d.getVersion();
-    }
-
-    public static String toGAV(Artifact a) {
-        return a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getVersion();
-    }
 }

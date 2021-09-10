@@ -38,7 +38,7 @@ For more details, please look at [this issue](https://github.com/adobe/aem-proje
 There is a testPom.xml file available for testing with. You can run the build tool by firstly installing it with `mvn install`, and then by calling it as such:
 
 ```shell
-mvn -f build-tool/src/test/resources/testPom.xml azure:run
+mvn -f tests/appconfig/pom.xml azure:run
 ```
 
 For faster development cycles, it is recommended to chain together the install and azure:run steps, as such:

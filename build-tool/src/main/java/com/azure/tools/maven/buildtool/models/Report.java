@@ -2,7 +2,9 @@ package com.azure.tools.maven.buildtool.models;
 
 import com.azure.tools.maven.buildtool.mojo.AzureSdkMojo;
 import com.azure.tools.maven.buildtool.util.AnnotatedMethodCallerResult;
+import com.azure.tools.maven.buildtool.util.MavenUtils;
 import com.azure.tools.maven.buildtool.util.MojoUtils;
+import com.azure.tools.maven.buildtool.util.logging.Logger;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.maven.model.Dependency;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 import static com.azure.tools.maven.buildtool.util.MojoUtils.getAllDependencies;
 
 public class Report {
+    private static final Logger LOGGER = Logger.getInstance();
 
     public static final String AZURE_DEPENDENCY_GROUP = "com.azure";
     private static final String AZURE_SDK_BOM_ARTIFACT_ID = "azure-sdk-bom";
@@ -32,8 +35,8 @@ public class Report {
     private List<String> azureDependencies;
     //    private List<String> consumedServiceMethods;
     private Set<AnnotatedMethodCallerResult> serviceMethodCalls;
-    private Set<String> outdatedDirectDependencies;
-    private Set<String> outdatedTransitiveDependencies;
+    private Set<OutdatedDependency> outdatedDirectDependencies;
+    private Set<OutdatedDependency> outdatedTransitiveDependencies;
     private String bomVersion;
     private String jsonReport;
 
@@ -46,19 +49,18 @@ public class Report {
     /**
      * The report is concluded once all the tools are run. The tools are designed to withhold all result until
      * the conclusion of this report, and then it is the duty of this report to provide the result to the user.
-     * @param mojo The plugin mojo
      */
-    public void conclude(AzureSdkMojo mojo) {
-        if (!warningMessages.isEmpty() && mojo.getLog().isWarnEnabled()) {
-            warningMessages.forEach(mojo.getLog()::warn);
+    public void conclude() {
+        if (!warningMessages.isEmpty() && LOGGER.isWarnEnabled()) {
+            warningMessages.forEach(LOGGER::warn);
         }
-        if (!errorMessages.isEmpty() && mojo.getLog().isErrorEnabled()) {
-            errorMessages.forEach(mojo.getLog()::error);
+        if (!errorMessages.isEmpty() && LOGGER.isErrorEnabled()) {
+            errorMessages.forEach(LOGGER::error);
         }
-        this.bomVersion = getBomVersion(mojo);
-        this.azureDependencies = getAzureDependencies(mojo);
+        this.bomVersion = getBomVersion();
+        this.azureDependencies = getAzureDependencies();
 
-        createJsonReport(mojo);
+        createJsonReport();
         // we throw a single runtime exception encapsulating all failure messages into one
         if (!failureMessages.isEmpty()) {
             StringBuilder sb = new StringBuilder("Build failure for the following reasons:\n");
@@ -67,8 +69,8 @@ public class Report {
         }
     }
 
-    private String getBomVersion(AzureSdkMojo mojo) {
-        DependencyManagement depMgmt = mojo.getProject().getDependencyManagement();
+    private String getBomVersion() {
+        DependencyManagement depMgmt = AzureSdkMojo.MOJO.getProject().getDependencyManagement();
         Optional<Dependency> bomDependency = Optional.empty();
         if (depMgmt != null) {
             bomDependency = depMgmt.getDependencies().stream()
@@ -82,17 +84,17 @@ public class Report {
         return null;
     }
 
-    private void createJsonReport(AzureSdkMojo mojo) {
+    private void createJsonReport() {
 
         try {
             StringWriter writer = new StringWriter();
             JsonGenerator generator = new JsonFactory().createGenerator(writer).useDefaultPrettyPrinter();
 
             generator.writeStartObject();
-            generator.writeStringField("group", mojo.getProject().getGroupId());
-            generator.writeStringField("artifact", mojo.getProject().getArtifactId());
-            generator.writeStringField("version", mojo.getProject().getVersion());
-            generator.writeStringField("name", mojo.getProject().getName());
+            generator.writeStringField("group", AzureSdkMojo.MOJO.getProject().getGroupId());
+            generator.writeStringField("artifact", AzureSdkMojo.MOJO.getProject().getArtifactId());
+            generator.writeStringField("version", AzureSdkMojo.MOJO.getProject().getVersion());
+            generator.writeStringField("name", AzureSdkMojo.MOJO.getProject().getName());
             if (this.bomVersion != null && !this.bomVersion.isEmpty()) {
                 generator.writeStringField("bomVersion", this.bomVersion);
             }
@@ -100,9 +102,9 @@ public class Report {
                 writeArray("azureDependencies", azureDependencies, generator);
             }
 
-            if (this.outdatedDirectDependencies != null && !this.outdatedDirectDependencies.isEmpty()) {
-                writeArray("outdatedDependencies", outdatedDirectDependencies, generator);
-            }
+//            if (this.outdatedDirectDependencies != null && !this.outdatedDirectDependencies.isEmpty()) {
+//                writeArray("outdatedDependencies", outdatedDirectDependencies, generator);
+//            }
 
             if (this.serviceMethodCalls != null && !this.serviceMethodCalls.isEmpty()) {
                 writeArray("serviceMethodCalls", serviceMethodCalls
@@ -111,15 +113,15 @@ public class Report {
                         .collect(Collectors.toList()), generator);
             }
 
-            if (this.errorMessages != null && !this.errorMessages.isEmpty()) {
+            if (!this.errorMessages.isEmpty()) {
                 writeArray("errorMessages", errorMessages, generator);
             }
 
-            if (this.warningMessages != null && !this.warningMessages.isEmpty()) {
+            if (!this.warningMessages.isEmpty()) {
                 writeArray("warningMessages", warningMessages, generator);
             }
 
-            if (this.failureMessages != null && !this.failureMessages.isEmpty()) {
+            if (!this.failureMessages.isEmpty()) {
                 writeArray("failureMessages", failureMessages, generator);
             }
 
@@ -128,8 +130,9 @@ public class Report {
             writer.close();
 
             this.jsonReport = writer.toString();
-            if (mojo.getReportFile() != null && !mojo.getReportFile().isEmpty()) {
-                File reportFile = new File(mojo.getReportFile());
+            final String reportFileString = AzureSdkMojo.MOJO.getReportFile();
+            if (reportFileString != null && !reportFileString.isEmpty()) {
+                final File reportFile = new File(reportFileString);
                 try (FileWriter fileWriter = new FileWriter(reportFile)) {
                     fileWriter.write(this.jsonReport);
                 }
@@ -148,11 +151,11 @@ public class Report {
         generator.writeEndArray();
     }
 
-    private List<String> getAzureDependencies(AzureSdkMojo mojo) {
-        return getAllDependencies(mojo).stream()
+    private List<String> getAzureDependencies() {
+        return getAllDependencies().stream()
                 // this includes Track 2 mgmt libraries, spring libraries and data plane libraries
                 .filter(artifact -> artifact.getGroupId().startsWith(AZURE_DEPENDENCY_GROUP))
-                .map(MojoUtils::toGAV)
+                .map(MavenUtils::toGAV)
                 .collect(Collectors.toList());
     }
 
@@ -172,11 +175,11 @@ public class Report {
         this.serviceMethodCalls = serviceMethodCalls;
     }
 
-    public void setOutdatedDirectDependencies(Set<String> outdatedDirectDependencies) {
+    public void setOutdatedDirectDependencies(Set<OutdatedDependency> outdatedDirectDependencies) {
         this.outdatedDirectDependencies = outdatedDirectDependencies;
     }
 
-    public void setOutdatedTransitiveDependencies(Set<String> outdatedTransitiveDependencies) {
+    public void setOutdatedTransitiveDependencies(Set<OutdatedDependency> outdatedTransitiveDependencies) {
         this.outdatedTransitiveDependencies = outdatedTransitiveDependencies;
     }
 }

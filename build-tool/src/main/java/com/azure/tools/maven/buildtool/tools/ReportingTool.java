@@ -2,15 +2,15 @@ package com.azure.tools.maven.buildtool.tools;
 
 import com.azure.tools.maven.buildtool.mojo.AzureSdkMojo;
 
-public class ReportingTool implements Tool {
+public class ReportingTool implements Runnable {
 
     @Override
-    public void run(AzureSdkMojo mojo) {
-        sendToMicrosoft(mojo);
+    public void run() {
+        sendToMicrosoft();
     }
 
-    private void sendToMicrosoft(AzureSdkMojo mojo) {
-        if (!mojo.isSendToMicrosoft()) {
+    private void sendToMicrosoft() {
+        if (!AzureSdkMojo.MOJO.isSendToMicrosoft()) {
             return;
         }
 

@@ -1,7 +1,6 @@
 package com.azure.tools.maven.buildtool.mojo;
 
 import com.azure.tools.maven.buildtool.models.Report;
-import com.azure.tools.maven.buildtool.tools.Tool;
 import com.azure.tools.maven.buildtool.tools.Tools;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -12,14 +11,12 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Mojo(name = "run",
     defaultPhase = LifecyclePhase.PREPARE_PACKAGE,
     requiresDependencyCollection = ResolutionScope.RUNTIME,
     requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class AzureSdkMojo extends AbstractMojo {
+    public static AzureSdkMojo MOJO;
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -48,6 +45,7 @@ public class AzureSdkMojo extends AbstractMojo {
     private final Report report;
 
     public AzureSdkMojo() {
+        MOJO = this;
         this.report = new Report();
     }
 
@@ -62,9 +60,9 @@ public class AzureSdkMojo extends AbstractMojo {
         getLog().info("========================================================================");
 
         // Run all of the tools. They will collect their results in the report.
-        Tools.getTools().forEach(t -> t.run(this));
+        Tools.getTools().forEach(Runnable::run);
 
-        report.conclude(this);
+        report.conclude();
     }
 
     public MavenProject getProject() {
@@ -91,11 +89,7 @@ public class AzureSdkMojo extends AbstractMojo {
         return failOnBeta;
     }
 
-//    public boolean isPrintToConsole() {
-//        return printToConsole;
-//    }
-//
-   public String getReportFile() {
+    public String getReportFile() {
        return reportFile;
    }
 }
