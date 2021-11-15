@@ -41,7 +41,7 @@
 #foreach($dependency in $dependencies)
         <dependency>
             <groupId>com.azure</groupId>
-            <artifactId>$dependency</artifactId>
+            <artifactId>$dependency.trim()</artifactId>
         </dependency>
 #end
 #if( ${enableGraalVM} == 'true')
